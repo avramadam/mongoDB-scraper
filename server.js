@@ -9,7 +9,7 @@ const request = require("request");
 const cheerio = require("cheerio");
 
 // APP SETUP
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 const app = express();
 
 app.use(logger("dev"));
