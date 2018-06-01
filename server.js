@@ -168,5 +168,5 @@ app.delete('/articles', (req, res) => {
 
 // OBSERVER
 app.listen(PORT, function() {
-    console.log("App running on port 8000!");
+    console.log("App running on port 3000!");
 });
