@@ -1,51 +1,172 @@
-var express = require("express");
-var bodyParser = require("body-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-var expressHandlebars = require("express-handlebars");
-var methodOverride = require("method-override");
+// DEPENDENCIES
+const express = require("express");
+const bodyParser = require("body-parser");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const exphbs = require('express-handlebars');
+const methodOverride = require('method-override');
+const request = require("request");
+const cheerio = require("cheerio");
 
-// Initialize Express
-var app = express();
+// APP SETUP
+const PORT = process.env.PORT || 8000;
+const app = express();
 
-// Use morgan and body parser with our app
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({
-  extended: false
+    extended: false
 }));
-
-// Make public a static dir
 app.use(express.static("public"));
+app.use(methodOverride("_method"));
 
-app.use(methodOverride('_method'));
-
-// Database configuration with mongoose
-
+// DB SETUP
+var Note = require("./models/Note.js");
+var Article = require("./models/Article.js");
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI);
-
-var db = mongoose.connection;
-
-// Show any mongoose errors
-db.on("error", function (error) {
-  console.log("Mongoose Error: ", error);
+//mongoose.Promise = Promise;
+//mongoose.connect("mongodb://heroku_4mndt0fx:t8pg6snbn99vari2i1ar3p5cfv@ds139430.mlab.com:39430/heroku_4mndt0fx");
+const db = mongoose.connection;
+db.on("error", (error) => {
+    console.log("Mongoose Error: ", error);
+});
+db.once("open", () => {
+    console.log("Mongoose connection successful.");
 });
 
-// Once logged in to the db through mongoose, log a success message
-db.once("open", function () {
-  console.log("Mongoose connection successful.");
+// ATTACH HANDLEBARS
+app.engine('handlebars', exphbs({ defaultLayout: 'main.handlebars' }));
+app.set('views', './views');
+app.set('view engine', 'handlebars');
+
+// ROUTES
+// LANDING
+app.get('/', (req, res) => {
+    Article.find({}, (error, doc) => {
+        let hsbObj = {
+            articles: doc
+        };
+        if (error) {
+            console.log(error);
+        } else {
+            res.render('index', hsbObj);
+        }
+    });
 });
 
-app.engine("handlebars", expressHandlebars({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
+// SCRAPE
+app.get("/scrape", (req, res) => {
+    request("https://news.ycombinator.com/", (error, response, html) => {
+        let $ = cheerio.load(html);
+        $("td[class=title]").each(function(i, element) {
+            let result = {};
+            result.title = $(this).children("a").text();
+            result.link = $(this).children("a").attr("href");
+            if (result.title != "More") {
+                let entry = new Article(result);
+                entry.save((err, doc) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log(doc);
+                    }
+                });
+            }
+        });
+    });
+    res.send("Scrape Complete");
+});
 
-var routes = require("./controllers/18-mongo-controller.js");
+// GET ALL ARTICLES - JSON
+app.get("/articles", (req, res) => {
+    Article.find({}, (error, doc) => {
+        if (error) {
+            console.log(error);
+        } else {
+            res.json(doc);
+        }
+    });
+});
 
-app.use("/", routes);
+// GET ONE ARTICLE
+app.get('/articles/:id', (req, res) => {
+    Article.findOne({ "_id": req.params.id })
+        .populate('notes')
+        .exec((error, doc) => {
+            if (error) {
+                console.log(error);
+            } else {
+                res.json(doc);
+            }
+        });
+});
 
-const PORT=process.env.PORT || 3000;
-// Listen on port 3000
-app.listen(PORT, function () {
-  console.log(`App running on port ${PORT}!`);
+// CREATE NOTE
+app.post('/articles/:id', (req, res) => {
+    var newNote = new Note(req.body);
+    newNote.save((error, doc) => {
+        if (error) {
+            console.log(error);
+        } else {
+            Article.findOneAndUpdate({ '_id': req.params.id }, { $push: { 'notes': doc._id } }, { new: true })
+                .populate('notes')
+                .exec((error, doc) => {
+                    if (error) {
+                        console.log(error);
+                        res.send(error);
+                    } else {
+                        res.send(doc);
+                    }
+                });
+        }
+    });
+});
+
+// DELETE NOTE
+app.delete('/articles/:id', (req, res) => {
+    Note.remove({ '_id': req.params.id }, (error, doc) => {
+        if (error) {
+            console.log(error);
+            res.send(error);
+        } else {
+            Article.findOne({ '_id': req.body.parent })
+                .populate('notes')
+                .exec((error, doc) => {
+                    if (error) {
+                        console.log(error);
+                        res.send(error);
+                    } else {
+                        res.send(doc);
+                    }
+                });
+        }
+    });
+});
+
+// DELETE ARTICLES
+app.delete('/articles', (req, res) => {
+    Article.remove({ '_id': req.body.id }, (error, doc) => {
+        if (error) {
+            console.log(error);
+            res.send(error);
+        } else {
+            Article.find({}, (error, doc) => {
+                console.log(doc);
+                let hsbObj = {
+                    articles: doc
+                };
+                if (error) {
+                    console.log(error);
+                } else {
+                    res.render('index', hsbObj);
+                }
+            });
+        }
+    });
+});
+
+// OBSERVER
+app.listen(PORT, function() {
+    console.log("App running on port 8000!");
 });

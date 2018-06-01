@@ -1,35 +1,21 @@
-// Require mongoose
-var mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-// Create the Schema class
-var Schema = mongoose.Schema;
-
-// new Schema: ArticleSchema
-var ArticleSchema = new Schema({
-    url: {
-      type: String,
-      trim: true,
-      required: "URL is required"
+const ArticleSchema = new Schema({
+    title: {
+        type: String,
+        required: true
     },
-    headline: {
-      type: String,
-      trim: true,
-      required: "Headline is required"
+    link: {
+        type: String,
+        required: true
     },
-    summary: {
-      type: String,
-      trim: true
-    },
-    saved: {
-      type: Boolean,
-      default: false
-    }
-  },
+    notes: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Note'
+    }]
+});
 
-  {timestamps: true});
+var Article = mongoose.model('Article', ArticleSchema);
 
-// Use the above schema to make the Article model
-var Article = mongoose.model("Article", ArticleSchema);
-
-// Export the model so the server can use it
 module.exports = Article;
