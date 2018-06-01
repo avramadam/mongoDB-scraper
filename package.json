@@ -1,5 +1,5 @@
 {
-  "name": "mongodb-scraper",
+  "name": "mongodbscraper",
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
@@ -27,5 +27,5 @@
     "url": "https://github.com/avramadam/mongoDB-scraper/issues"
   },
   "homepage": "https://github.com/avramadam/mongoDB-scraper#readme",
-  "description": "mongodb-scraper"
+  "description": "mongodbscraper"
 }
