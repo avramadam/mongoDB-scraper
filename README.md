@@ -4,7 +4,6 @@
 Uses Cheerio to scrape news articles from a site and allows the user to make comments and delete them. Uses Mongoose to store comments and articles.
 
 ## Getting Started
-https://noe-mongo-scraper.herokuapp.com/
 
 ## Screen Shots
 
@@ -37,4 +36,4 @@ https://noe-mongo-scraper.herokuapp.com/
 
 ## Authors
 
-* **Noe Tellez** - Full Stack Web Developer - [Noe Tellez](https://github.com/noetlz10)
+* **Avram Adam** - Full Stack Web Developer - [Avram Adam](https://github.com/avramadam)
