@@ -9,7 +9,7 @@ var cheerio = require('cheerio');
 
 //Require models
 var Comment = require('../models/Comment.js');
-var Article = require('../models/Article.js');
+var Article = require('../models/article.js');
 
 //index
 router.get('/', function(req, res) {
