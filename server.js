@@ -21,10 +21,10 @@ app.engine('handlebars', exphbs({
 app.set('view engine', 'handlebars');
 
 //connecting to MongoDB
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
-mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI);
-
+//var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+//mongoose.Promise = Promise;
+//mongoose.connect(MONGODB_URI);
+mongoose.connect('mongodb://heroku_pchb02kr:14q9sun36f66au6a24gdftodn7@ds145010.mlab.com:45010/heroku_pchb02kr');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
