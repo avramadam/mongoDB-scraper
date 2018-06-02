@@ -36,4 +36,4 @@ Uses Cheerio to scrape news articles from a site and allows the user to make com
 
 ## Authors
 
-* **Avram Adam** - Full Stack Web Developer - [Avram Adam](https://github.com/avramadam)
+* **Avram Adam** - Full Stack Web Developer - [https://github.com/avramadam]
